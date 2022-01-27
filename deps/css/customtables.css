@@ -1,0 +1,15 @@
+table {
+    /*table-layout: fixed;*/
+    width: 100%;
+    margin: 0;
+}
+
+/* Reduce vertical spacing */
+div.dataTables_wrapper div.dataTables_info {
+  padding-top: 0px;
+}
+ 
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+  padding: 4px 8px 4px 8px;
+}
+/* End Reduce vertical spacing */

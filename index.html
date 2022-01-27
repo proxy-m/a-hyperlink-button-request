@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+    <link href="./deps/css/bootstrap.min.css" rel="stylesheet">
+	
+	<link rel="stylesheet" type="text/css" href="./deps/css/customtables.css">
+	<link rel="stylesheet" type="text/css" href="./deps/css/custom.css"> <!-- Your custom css -->
+ 
+    <script type="text/javascript" src="./deps/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./deps/js/bootstrap.min.js"></script>
+	
+	<script type="text/javascript" src="./deps/js/brolog.js"></script>
+	<script>
+		var __filename = 'brwindow';
+		window.logger = new Logger(__filename);
+		Logger.addConsoleLogger(__filename);
+		Logger.setDebug();
+	</script>
+   
+    <style>
+        body {
+            padding-top: 50px;
+        }
+        
+        a, a:visited, a:hover, a:active {
+			color: inherit;
+		}
+		
+		.cursorDefult {
+			cursor: default !important;
+		}
+			
+		input.editor, textarea.editor {
+			width: 100%;
+			height: 70px;
+		}
+    </style> 
+</head>
+<body class="container">
+
+<script>
+function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction) {
+	if (!oldMarker || !newMarker || oldMarker == newMarker || !oldMarker.startsWith('#') || !newMarker.startsWith('#')) {
+		return false;
+	}
+	oldMarker = oldMarker.substring(1);
+	newMarker = newMarker.substring(1);
+	$('a[href$="#'+oldMarker+'"]').each(function (i, e) {
+		var t = $(e);
+		var datas = t.data();
+		//logger.debug(datas);
+		
+		var requestType = datas.requestType;
+		if (requestType !== 'form') {
+			logger.error('only form request supported here');
+			return false;
+		}
+		
+		var ar = (''+e.href).split('#');
+		var dataAction = ar[0]; // href
+		t.attr('href', dataAction+'#'+newMarker);
+		
+		var $form = $("<form></form>").attr({ method: datas.method || "get", action: dataAction, target: "dummyframe"}).css("display","none");
+		
+		if (datas.data) {
+			try {
+				if (datas.data.length || datas.data.length === '') {
+					datas.data = decodeURIComponent(datas.data);
+					datas.data = Object.fromEntries(new URLSearchParams(datas.data));
+				}
+			} catch (e1) {
+			}
+			try {
+				if (!datas.data.length) {
+					datas.data = JSON.stringify(datas.data);
+				}
+			} catch (e2) {
+			}
+			try {
+				datas.data = JSON.parse(datas.data);
+			} catch (e3) {
+				datas.data = "Error";
+				return false;
+			}											
+		
+			for (var key in datas.data) {
+				$form.append($("<input/>").attr({type: "hidden", name: key, value: datas.data[key]}));
+			}
+		}
+		$("body").append($form);
+		t.data("onclick", e.onclick);
+		e.onclick = 'return false;';
+		t.data("postform",$form);											
+	}).click(function (ev) {
+		ev.preventDefault();
+		if ($(this).data("postform") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction())) {
+			$(this).data("postform").submit();
+		} else {
+			logger.warn("No .postform or canceled");
+			return false;
+		}
+		var f = $(this).data("onclick") || function () {};
+		$(this).data("onclick", "");
+		$(this).css('pointer-events', 'none');
+		$(this).css('cursor', 'default');
+		setTimeout(function () {
+			f();
+			if (afterAction && (typeof afterAction) === 'function') {
+				afterAction();
+			}
+		}.bind(this), 500);
+		return true;
+	});
+	return true;
+};
+</script>
+
+<header>
+
+</header>
+
+<main>
+  <div class="jumbotron">
+    <h1>This is great</h1>
+  </div>
+</main>
+
+<a title="+" onclick="logger.debug('Link button!');" data-request-type="form" data-method="post" data-data='{"foo": "bar"}' style="color: blue; font-size: 40px;" href="https://www.bing.com/search?q=a+hyperlink+button+request&form=QBLH&sp=-1&pq=a+hyperlink+button+request&sc=0-19&qs=n&sk=#do-request1"><button style="width: 30%; height: 200px;">+ Click</button></a>
+<script>
+	andThenMakeSmartLink('#do-request1', '#dorequest1');
+</script>
+
+<iframe name="dummyframe" id="dummyframe" style="display: none;"></iframe>
+</body>
+</html>
