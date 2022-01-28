@@ -36,6 +36,12 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 		var ar = (''+e.href).split('#');
 		var dataAction = ar[0]; // href
 		t.attr('href', dataAction+'#'+newMarker);
+
+		t.data('onclick', e.onclick ? e.onclick : t.data('onclick'));
+		if (typeof t.data('onclick') !== 'function') {
+			t.data('onclick', new window.Function(t.data('onclick')));
+		}
+		e.onclick = 'return false;';
 		
 		var requestType = datas.requestType;
 		switch (requestType) {
@@ -56,8 +62,6 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 					}
 				}
 				$('body').append($form);
-				t.data("onclick", e.onclick);
-				e.onclick = 'return false;';
 				t.data("postform",$form);
 				
 				t.click(function (ev) {
@@ -82,8 +86,6 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 				});
 				break;
 			case 'ajax':				
-				t.data("onclick", e.onclick);
-				e.onclick = 'return false;';
 				t.data("postajax", "postajax");
 				
 				t.click(function (ev) {
