@@ -1,4 +1,4 @@
-function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction) {
+function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, maxTimeout=500) {
 	if (!oldMarker || !newMarker || oldMarker == newMarker || !oldMarker.startsWith('#') || !newMarker.startsWith('#')) {
 		return false;
 	}
@@ -9,7 +9,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 			if ([';', '"', '\'', '(', ')', '[', ']', '{', '}', ' '].filter(function (e) { return mayBeFunction.indexOf(e) >= 0 }).length > 0) {
 				return new window.Function(mayBeFunction);
 			} else if (window[mayBeFunction]) {
-				return function () { return window[mayBeFunction]() };
+				return function () { return this[mayBeFunction](...arguments) }.bind(window);
 			} else {
 				return new window.Function(mayBeFunction+'()');
 			}
@@ -53,6 +53,8 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 		t.data('onclick', toFunction(e.onclick ? e.onclick : t.data('onclick'), window));
 		e.onclick = 'return false;';
 		
+		onResponse = onResponse || toFunction(t.data('onresponse'), window);
+		
 		var requestType = datas.requestType;
 		switch (requestType) {
 			case 'form':				
@@ -88,10 +90,11 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 					$(this).css('cursor', 'default');
 					setTimeout(function () {
 						f();
-						if (afterAction && (typeof afterAction) === 'function') {
-							afterAction();
+						if (onResponse && (typeof onResponse) === 'function') {
+							logger.warn('onResponse can not process data (postform)');
+							onResponse(undefined);
 						}
-					}.bind(this), 500);
+					}.bind(this), maxTimeout);
 					return true;
 				});
 				break;
@@ -100,12 +103,21 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 				
 				t.click(function (ev) {
 					ev.preventDefault();
+					var onResponseData = undefined;
 					if ($(this).data("postajax") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction())) {
 						$.ajax({
 							"url": dataAction,
 							"type": datas.method || "get",
 							"async": false,
 							"data": datas.data,
+						}).success(function (data, textStatus, jqXHR) { // .done
+							logger.debug('textStatus', textStatus);
+							logger.trace('jqXHR', jqXHR);
+							onResponseData = data;
+						}).error(function (jqXHR, textStatus, errorThrown) { // .fail
+							logger.debug('textStatus', textStatus);
+							logger.trace('errorThrown', errorThrown, jqXHR);
+							onResponseData = null;
 						});
 					} else {
 						logger.warn("No .postajax or canceled");
@@ -117,10 +129,10 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 					$(this).css('cursor', 'default');
 					setTimeout(function () {
 						f();
-						if (afterAction && (typeof afterAction) === 'function') {
-							afterAction();
+						if (onResponse && (typeof onResponse) === 'function') {
+							onResponse(onResponseData);
 						}
-					}.bind(this), 500);
+					}.bind(this), maxTimeout);
 					return true;
 				});
 				break;
