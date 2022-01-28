@@ -19,7 +19,15 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 		var dataAction = ar[0]; // href
 		t.attr('href', dataAction+'#'+newMarker);
 		
-		var $form = $("<form></form>").attr({ method: datas.method || "get", action: dataAction, target: "dummyframe"}).css("display","none");
+		var frname = 'dummyframe';
+		var fr = $('iframe#'+frname)[0] || $('iframe[name="'+frname+'"]')[0];
+		if (!fr) {
+			fr = $('<iframe name="'+frname+'" id="'+frname+'" style="display: none;"></iframe>');
+			$('body').append(fr);
+		}
+		frname = $(fr).attr('name');
+		
+		var $form = $("<form></form>").attr({ method: datas.method || "get", action: dataAction, target: frname}).css("display","none");
 		
 		if (datas.data) {
 			try {
@@ -46,7 +54,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 				$form.append($("<input/>").attr({type: "hidden", name: key, value: datas.data[key]}));
 			}
 		}
-		$("body").append($form);
+		$('body').append($form);
 		t.data("onclick", e.onclick);
 		e.onclick = 'return false;';
 		t.data("postform",$form);											
