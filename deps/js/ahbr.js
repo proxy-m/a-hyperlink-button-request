@@ -4,6 +4,19 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 	}
 	oldMarker = oldMarker.substring(1);
 	newMarker = newMarker.substring(1);
+	let toFunction = function (mayBeFunction, window) {
+		if (typeof mayBeFunction !== 'function') {
+			if ([';', '"', '\'', '(', ')', '[', ']', '{', '}', ' '].filter(function (e) { return mayBeFunction.indexOf(e) >= 0 }).length > 0) {
+				return new window.Function(mayBeFunction);
+			} else if (window[mayBeFunction]) {
+				return function () { return window[mayBeFunction]() };
+			} else {
+				return new window.Function(mayBeFunction+'()');
+			}
+		} else {
+			return mayBeFunction;
+		}
+	};
 	$('a[href$="#'+oldMarker+'"]').each(function (i, e) {
 		var t = $(e);
 		var datas = t.data();
@@ -37,10 +50,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, afterAction)
 		var dataAction = ar[0]; // href
 		t.attr('href', dataAction+'#'+newMarker);
 
-		t.data('onclick', e.onclick ? e.onclick : t.data('onclick'));
-		if (typeof t.data('onclick') !== 'function') {
-			t.data('onclick', new window.Function(t.data('onclick')));
-		}
+		t.data('onclick', toFunction(e.onclick ? e.onclick : t.data('onclick'), window));
 		e.onclick = 'return false;';
 		
 		var requestType = datas.requestType;
