@@ -4,7 +4,10 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 	}
 	oldMarker = oldMarker.substring(1);
 	newMarker = newMarker.substring(1);
-	let toFunction = function (mayBeFunction, window) {
+	let toFunction = function (mayBeFunction, window=window) {
+		if (!mayBeFunction || mayBeFunction === true) {
+			return function () {};
+		}
 		if (typeof mayBeFunction !== 'function') {
 			if ([';', '"', '\'', '(', ')', '[', ']', '{', '}', ' '].filter(function (e) { return mayBeFunction.indexOf(e) >= 0 }).length > 0) {
 				return new window.Function(mayBeFunction);
