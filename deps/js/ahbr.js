@@ -58,6 +58,11 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 		
 		onResponse = onResponse || toFunction(t.data('onresponse'), window);
 		
+		if (!datas.method || !datas.method.trim()) {
+			datas.method = datas.method || "get";
+		}
+		datas.method = datas.method.toLowerCase();
+		
 		var requestType = datas.requestType;
 		switch (requestType) {
 			case 'form':				
@@ -69,7 +74,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 				}
 				frname = $(fr).attr('name');
 				
-				var $form = $("<form></form>").attr({ method: datas.method || "get", action: dataAction, target: frname}).css("display","none");
+				var $form = $("<form></form>").attr({ method: datas.method, action: dataAction, target: frname}).css("display","none");
 				
 				if (datas.data) {
 					for (var key in datas.data) {
@@ -110,7 +115,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 					if ($(this).data("postajax") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction())) {
 						$.ajax({
 							"url": dataAction,
-							"type": datas.method || "get",
+							"type": datas.method, // method
 							"async": false,
 							"data": datas.data,
 						}).success(function (data, textStatus, jqXHR) { // .done
@@ -136,6 +141,57 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 							onResponse(onResponseData);
 						}
 					}.bind(this), maxTimeout);
+					return true;
+				});
+				break;
+			case 'fetch':				
+				t.data("postfetch", "postfetch");
+				
+				t.click(function (ev) {
+					ev.preventDefault();
+					var onResponseData = undefined;
+					var responseP = new Promise(function (resolve, reject) { resolve(false); });
+					if ($(this).data("postfetch") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction())) {
+						responseP = fetch(dataAction, { // url
+							"method": datas.method.toUpperCase(), // *GET, POST
+							"cache": 'no-cache',
+							"credentials": 'include', // include, *same-origin, omit // cookies
+							"cors": 'no-cors', // no-cors, *cors, same-origin
+							"redirect": 'follow', // manual, *follow, error
+							"referrerPolicy": 'no-referrer', // no-referrer, *client
+							"headers": {
+								// "Content-Type": 'application/json',
+								"Content-Type": 'application/x-www-form-urlencoded',
+							},
+							"body": 
+								// JSON.stringify(datas.data),
+								new URLSearchParams (datas.data),
+						}).then(function (data) {
+							logger.debug('status', data.status);
+							responseP = data.text();
+						});
+					} else {
+						logger.warn("No .postfetch or canceled");
+						return false;
+					}
+					var f = $(this).data("onclick") || function () {};
+					$(this).data("onclick", "");
+					$(this).css('pointer-events', 'none');
+					$(this).css('cursor', 'default');
+					responseP.finally(function () {
+						f();
+						responseP.then(function (data) { // .done
+							logger.trace('nice');
+							onResponseData = data;
+						}).catch(function (errorThrown) { // .fail
+							logger.debug('errorThrown', errorThrown);
+							onResponseData = null;
+						}).finally(function () {
+							if (onResponse && (typeof onResponse) === 'function') {
+								onResponse(onResponseData);
+							}
+						});
+					}.bind(this));
 					return true;
 				});
 				break;
