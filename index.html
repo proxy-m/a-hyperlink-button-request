@@ -58,7 +58,7 @@
 	};
 </script>
 
-<a title="+" data-onclick="logger.debug('Link button!');" data-onresponse="processAnswer" data-request-type="fetch" data-method="post" data-data='{"foo": "bar"}' style="color: blue; font-size: 40px;" href="https://www.bing.com/search?q=a+hyperlink+button+request&form=QBLH&sp=-1&pq=a+hyperlink+button+request&sc=0-19&qs=n&sk=#do-request1"><button style="width: 30%; height: 200px;">+ Click</button></a>
+<a title="+" data-onclick="logger.debug('Link button!');" data-onresponse="processAnswer" data-request-type="ajax" data-method="post" data-data='{"foo": "bar"}' style="color: blue; font-size: 40px;" href="https://api.allorigins.win/raw?url=https://www.bing.com/search?q=a+hyperlink+button+request&form=QBLH&sp=-1&pq=a+hyperlink+button+request&sc=0-19&qs=n&sk=#do-request1"><button style="width: 30%; height: 200px;">+ Click</button></a>
 <script>
 	andThenMakeSmartLink('#do-request1', '#dorequest1', null, null, 1000);
 </script>
