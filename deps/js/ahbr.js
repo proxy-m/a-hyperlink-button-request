@@ -93,9 +93,6 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 						return false;
 					}
 					var f = $(this).data("onclick") || function () {};
-					$(this).data("onclick", "");
-					$(this).css('pointer-events', 'none');
-					$(this).css('cursor', 'default');
 					setTimeout(function () {
 						f();
 						if (onResponse && (typeof onResponse) === 'function') {
@@ -132,9 +129,6 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 						return false;
 					}
 					var f = $(this).data("onclick") || function () {};
-					$(this).data("onclick", "");
-					$(this).css('pointer-events', 'none');
-					$(this).css('cursor', 'default');
 					setTimeout(function () {
 						f();
 						if (onResponse && (typeof onResponse) === 'function') {
@@ -175,9 +169,6 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 						return false;
 					}
 					var f = $(this).data("onclick") || function () {};
-					$(this).data("onclick", "");
-					$(this).css('pointer-events', 'none');
-					$(this).css('cursor', 'default');
 					responseP.finally(function () {
 						f();
 						responseP.then(function (data) { // .done
