@@ -86,7 +86,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 				
 				t.click(function (ev) {
 					ev.preventDefault();
-					if ($(this).data("postform") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction())) {
+					if ($(this).data("postform") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction()) && !($(this).is(':disabled') || $(this).children().is(':disabled'))) {
 						$(this).data("postform").submit();
 					} else {
 						logger.warn("No .postform or canceled");
@@ -109,7 +109,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 				t.click(function (ev) {
 					ev.preventDefault();
 					var onResponseData = undefined;
-					if ($(this).data("postajax") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction())) {
+					if ($(this).data("postajax") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction()) && !($(this).is(':disabled') || $(this).children().is(':disabled'))) {
 						$.ajax({
 							"url": dataAction,
 							"type": datas.method, // method
@@ -145,7 +145,7 @@ function andThenMakeSmartLink (oldMarker, newMarker, confirmAction, onResponse, 
 					ev.preventDefault();
 					var onResponseData = undefined;
 					var responseP = new Promise(function (resolve, reject) { resolve(false); });
-					if ($(this).data("postfetch") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction())) {
+					if ($(this).data("postfetch") && (!(confirmAction && (typeof confirmAction) === 'function') || confirmAction()) && !($(this).is(':disabled') || $(this).children().is(':disabled'))) {
 						responseP = fetch(dataAction, { // url
 							"method": datas.method.toUpperCase(), // *GET, POST
 							"cache": 'no-cache',
